@@ -1,0 +1,501 @@
+/* ═══════════════ THÈME SOMBRE ═══════════════ */
+:host {
+  --bg:        #0d1117;
+  --card:      #161b22;
+  --card-soft: #1c2430;
+  --border:    #30363d;
+  --text:      #e6edf3;
+  --text-dim:  #8b949e;
+  --accent:    #4f8cff;
+  --accent-2:  #7c5cff;
+  --green:     #3fb950;
+  --red:       #f85149;
+  --yellow:    #d29922;
+
+  display: block;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 20px 60px;
+}
+
+/* ─── En-tête ─── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
+  color: #fff;
+}
+.header h1 { margin: 0; font-size: 24px; }
+.subtitle { margin: 2px 0 0; color: var(--text-dim); font-size: 14px; }
+
+/* ─── Grille 2 colonnes ─── */
+.grid {
+  display: grid;
+  /* minmax(0, …) = autorise chaque colonne à rétrécir sous la taille de son
+     contenu, sinon le diagramme large de gauche écrase la colonne de droite */
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .grid { grid-template-columns: 1fr; }
+}
+
+/* ─── Cartes ─── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px;
+  min-width: 0; /* indispensable pour que le contenu large ne déborde pas la colonne */
+}
+
+/* Le testeur d'API reste visible pendant qu'on scrolle le long pipeline */
+.api-card {
+  position: sticky;
+  top: 20px;
+}
+@media (max-width: 900px) {
+  .api-card { position: static; }
+}
+.card-title {
+  margin: 0 0 18px;
+  font-size: 17px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.tag {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-dim);
+  background: var(--card-soft);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+/* ─── Formulaire ─── */
+.form { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .04em; }
+
+input, select, textarea {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color .15s;
+  width: 100%;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+textarea { resize: vertical; }
+.mono { font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; }
+
+/* ─── Boutons ─── */
+.btn-run, .btn-send {
+  border: none;
+  border-radius: 8px;
+  padding: 11px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: opacity .15s, transform .05s;
+}
+.btn-run { background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+.btn-send { background: var(--card-soft); border: 1px solid var(--border); margin-top: 14px; }
+.btn-run:hover:not(:disabled), .btn-send:hover:not(:disabled) { opacity: .9; }
+.btn-run:active:not(:disabled), .btn-send:active:not(:disabled) { transform: translateY(1px); }
+.btn-run:disabled, .btn-send:disabled { opacity: .55; cursor: not-allowed; }
+
+/* ─── Alerte erreur ─── */
+.alert-error {
+  background: rgba(248, 81, 73, .12);
+  border: 1px solid rgba(248, 81, 73, .4);
+  color: #ff7b72;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+/* ─── Le pipeline (étapes) ─── */
+.pipeline { display: flex; flex-direction: column; }
+.step {
+  display: flex;
+  gap: 14px;
+  padding: 12px 0;
+  position: relative;
+  opacity: .5;
+  transition: opacity .3s;
+}
+/* trait vertical reliant les étapes */
+.step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 40px;
+  bottom: -4px;
+  width: 2px;
+  background: var(--border);
+}
+.step-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  flex-shrink: 0;
+  background: var(--card);
+  z-index: 1;
+}
+.step-label { font-weight: 600; font-size: 14px; }
+.step-detail { font-size: 12.5px; color: var(--text-dim); margin-top: 2px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-dim); }
+
+/* états */
+.step-running  { opacity: 1; }
+.step-running .step-icon  { border-color: var(--yellow); color: var(--yellow); }
+.step-success  { opacity: 1; }
+.step-success .step-icon  { border-color: var(--green); color: var(--green); background: rgba(63,185,80,.12); }
+.step-success:not(:last-child)::after { background: var(--green); }
+.step-error    { opacity: 1; }
+.step-error .step-icon    { border-color: var(--red); color: var(--red); background: rgba(248,81,73,.12); }
+
+/* ─── Badges infos ticket ─── */
+.ticket-info { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 4px; }
+.badge {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: var(--card-soft);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+.badge-intent { color: var(--accent); border-color: rgba(79,140,255,.4); }
+.badge-status { color: var(--green); border-color: rgba(63,185,80,.35); }
+
+/* ─── Démarche réelle : architecture d'exécution ─── */
+.tools { margin-top: 18px; }
+.tools-title {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.tools-count {
+  text-transform: none;
+  letter-spacing: 0;
+  background: var(--card-soft);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+}
+
+/* Vue d'ensemble : diagramme façon flowchart (comme le MD) */
+.arch {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 14px;
+  margin-bottom: 18px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.arch-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  text-align: center;
+  min-width: 120px;
+  padding: 10px 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--border);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.arch-start { border-top-color: var(--yellow); }
+.arch-node.srv-jira      { border-top-color: var(--accent); }
+.arch-node.srv-fs        { border-top-color: var(--green); }
+.arch-node.srv-atlassian { border-top-color: var(--accent-2); }
+.arch-icon { font-size: 20px; }
+.arch-label { font-size: 12px; font-weight: 600; line-height: 1.25; }
+.arch-target {
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 10.5px;
+  color: var(--text-dim);
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.arch-arrow {
+  display: flex;
+  align-items: center;
+  color: var(--text-dim);
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.flow { display: flex; flex-direction: column; align-items: stretch; }
+
+/* Un nœud = un outil appelé */
+.node {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  animation: slideIn .3s ease;
+}
+.srv-jira      { border-left-color: var(--accent); }
+.srv-fs        { border-left-color: var(--green); }
+.srv-atlassian { border-left-color: var(--accent-2); }
+
+.node-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: background .15s;
+}
+.node-main:hover { background: var(--card-soft); }
+.node-icon {
+  font-size: 20px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card-soft);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.node-body { flex: 1; min-width: 0; }
+.node-title { font-weight: 600; font-size: 14px; }
+.node-sub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+.srv-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: var(--card-soft);
+  color: var(--text-dim);
+}
+.srv-jira .srv-badge      { color: var(--accent); }
+.srv-fs .srv-badge        { color: var(--green); }
+.srv-atlassian .srv-badge { color: var(--accent-2); }
+.node-tool {
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 11.5px;
+  color: var(--text-dim);
+}
+.node-target {
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 11.5px;
+  color: var(--text);
+  background: var(--card-soft);
+  border: 1px solid var(--border);
+  padding: 1px 7px;
+  border-radius: 5px;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.node-preview {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 6px;
+  line-height: 1.4;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.tool-caret { color: var(--text-dim); font-size: 11px; flex-shrink: 0; white-space: nowrap; }
+
+/* La flèche qui relie les nœuds (aspect « architecture ») */
+.flow-arrow {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 16px;
+  line-height: 1;
+  padding: 4px 0;
+}
+
+/* Détail replié d'un nœud */
+.node-detail {
+  border-top: 1px solid var(--border);
+  padding: 12px 14px;
+  background: var(--card);
+}
+.detail-label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--text-dim);
+  margin: 0 0 6px;
+}
+.detail-label:not(:first-child) { margin-top: 12px; }
+.tool-args-pre {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px;
+  margin: 0;
+  font-size: 11.5px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.tool-result {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px;
+  margin: 0;
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 260px;
+  overflow-y: auto;
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ─── Testeur d'API : méthode HTTP ─── */
+.req-row { display: flex; gap: 8px; }
+.method-select {
+  width: auto;
+  min-width: 92px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+.url-input { flex: 1; min-width: 0; }
+.m-GET    { color: var(--green); }
+.m-POST   { color: var(--accent); }
+.m-PUT    { color: var(--yellow); }
+.m-PATCH  { color: var(--accent-2); }
+.m-DELETE { color: var(--red); }
+.hint { font-size: 11.5px; color: var(--text-dim); margin-top: 4px; display: block; }
+
+/* ─── Prompt repliable ─── */
+.link-toggle {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 12px 0 4px;
+}
+.prompt-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 240px;
+  overflow-y: auto;
+  font-family: 'Consolas', 'Courier New', monospace;
+}
+
+/* ─── Résultat ─── */
+.result { margin-top: 18px; }
+.result-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+.tokens {
+  background: var(--card-soft);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+}
+.result-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 460px;
+  overflow-y: auto;
+  margin: 0;
+}
+
+/* ─── Spinners ─── */
+.spinner, .spinner-sm {
+  border: 2px solid rgba(255,255,255,.25);
+  border-top-color: #fff;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin .7s linear infinite;
+}
+.spinner { width: 14px; height: 14px; }
+.spinner-sm { width: 12px; height: 12px; border-top-color: var(--yellow); border-color: rgba(210,153,34,.3); border-top-color: var(--yellow); }
+@keyframes spin { to { transform: rotate(360deg); } }

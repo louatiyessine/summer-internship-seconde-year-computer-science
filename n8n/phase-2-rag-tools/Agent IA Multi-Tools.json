@@ -1,0 +1,420 @@
+{
+  "name": "Agent IA Multi-Tools",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        -16
+      ],
+      "id": "63321814-3bb6-41b0-b672-99be278bd52c",
+      "name": "When chat message received",
+      "webhookId": "e01a4b4b-a169-406f-8233-52a95253cd2e"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        -16
+      ],
+      "id": "1a6d3e35-6810-4266-a96e-9415d2069022",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "qwen3:4b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        80,
+        208
+      ],
+      "id": "cedf0a73-6e2f-4117-8950-7f16940b1c05",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "ApUKtCarSeQrTCdg",
+          "name": "Ollama account 2"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        224,
+        208
+      ],
+      "id": "a4c8ee69-4cd3-405c-af26-2dd728980d9f",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "description": "Additionne deux nombres. À utiliser pour toute addition. Prend deux nombres a et b.",
+        "jsCode": "return String(query.a + query.b);",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{ \"a\": 5, \"b\": 3 }"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        320,
+        208
+      ],
+      "id": "89c069b4-71d8-4d01-9e77-d29b175fcf56",
+      "name": "Addition "
+    },
+    {
+      "parameters": {
+        "description": "Soustrait deux nombres (a moins b).",
+        "jsCode": "return String(query.a - query.b);",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{ \"a\": 5, \"b\": 3 }"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        416,
+        208
+      ],
+      "id": "1c8f4988-5c9a-45ce-9124-b8a6126a053c",
+      "name": "Soustraction "
+    },
+    {
+      "parameters": {
+        "description": "Multiplie deux nombres a et b.",
+        "jsCode": "return String(query.a * query.b);",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{ \"a\": 5, \"b\": 3 }"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        528,
+        208
+      ],
+      "id": "3088f1a1-484a-4cb8-a514-374b7d8cbeb9",
+      "name": "Multiplication"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Makes an HTTP requeDonne la météo actuelle d'une ville (température, description). Prend le nom d'une ville.st and returns the response data",
+        "url": "https://api.openweathermap.org/data/2.5/weather",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $fromAI('ville', 'le nom de la ville', 'string') }}"
+            },
+            {
+              "name": "appid",
+              "value": "aaa721629619b4371003eb3753489257"
+            },
+            {
+              "name": "units",
+              "value": "metric"
+            },
+            {
+              "name": "lang",
+              "value": "fr"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        368,
+        336
+      ],
+      "id": "a485311c-96fa-410e-bcec-e1bcfdbff583",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        752,
+        -64
+      ],
+      "id": "4a53af4f-14ed-4293-a0a8-2874bb763cc8",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "fileSelector": "C:\\Users\\Admin\\.n8n-files\\*.txt",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        1008,
+        -16
+      ],
+      "id": "150b0684-412a-4ec5-86a3-c03722f02e3a",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "memoryKey": {
+          "__rl": true,
+          "value": "docs_projet",
+          "mode": "list"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.3,
+      "position": [
+        1216,
+        -16
+      ],
+      "id": "e1a2aedd-5371-41b1-ac8e-0ff54fc5bae6",
+      "name": "Simple Vector Store"
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        1216,
+        192
+      ],
+      "id": "b38af6b8-4544-4fb2-b71c-5be56e819624",
+      "name": "Embeddings Ollama",
+      "credentials": {
+        "ollamaApi": {
+          "id": "ApUKtCarSeQrTCdg",
+          "name": "Ollama account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        1392,
+        192
+      ],
+      "id": "95210cee-8667-4b7a-ad7a-41d65e0c8309",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Cherche des informations dans les documents (projet Alpha, budgets, fiche TechnoSfax).",
+        "memoryKey": {
+          "__rl": true,
+          "value": "docs_projet",
+          "mode": "list",
+          "cachedResultName": "docs_projet"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.3,
+      "position": [
+        640,
+        208
+      ],
+      "id": "5c0cc614-a826-4fc1-8f00-56e44e5342bb",
+      "name": "Simple Vector Store1"
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        640,
+        336
+      ],
+      "id": "d7906e69-e2e4-4a8a-b41b-c715ba3995bf",
+      "name": "Embeddings Ollama1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "ApUKtCarSeQrTCdg",
+          "name": "Ollama account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Addition ": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Soustraction ": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Multiplication": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Simple Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Simple Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Simple Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Simple Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "1362054d-8579-49de-b46c-9c8fe5ed3841",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3f03647147013417cb46801f39298bdda66304756f2662f26f0baba600c82311"
+  },
+  "id": "9N6MMGuyDBDMgKRD",
+  "tags": []
+}

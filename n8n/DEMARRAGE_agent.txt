@@ -1,0 +1,52 @@
+========================================================
+   DÉMARRAGE DE L'AGENT IA  (n8n + Ollama + MCP)
+========================================================
+À faire à chaque démarrage du PC, dans l'ordre.
+Garde TOUS les terminaux ouverts pendant l'utilisation.
+
+--------------------------------------------------------
+1) OLLAMA
+   Ouvre l'application Ollama (icône lama en bas à droite).
+   (Souvent lancé automatiquement au démarrage de Windows.)
+
+2) n8n            --> Terminal 1 :
+   n8n
+   Puis ouvre dans le navigateur : http://localhost:5678
+
+3) MCP everything --> Terminal 2 :
+   npx -y @modelcontextprotocol/server-everything streamableHttp
+
+4) MCP filesystem --> Terminal 3 :
+   npx -y supergateway --stdio "npx -y @modelcontextprotocol/server-filesystem C:\Users\Admin\.n8n-files" --outputTransport streamableHttp
+
+5) RÉ-INGÉRER LES DOCUMENTS (RAG)
+   Dans n8n : ouvre le workflow "Agent IA MCP"
+   puis clique le bouton play (▶️) sur "When clicking Execute workflow".
+   (Obligatoire : la base RAG in-memory se vide à chaque redémarrage.)
+
+--------------------------------------------------------
+RAPPEL DES ADRESSES (déjà configurées dans n8n) :
+   MCP_Everything  : http://localhost:3001/mcp     (HTTP Streamable)
+   MCP_Filesystem  : http://127.0.0.1:8000/mcp     (HTTP Streamable)
+========================================================
+
+
+========================================================
+   VERSION SIMPLE (rapide)
+========================================================
+1. Ollama (ouvrir l'app)
+2. Terminal : n8n
+3. Terminal : npx -y @modelcontextprotocol/server-everything streamableHttp
+4. Terminal : npx -y supergateway --stdio "npx -y @modelcontextprotocol/server-filesystem C:\Users\Admin\.n8n-files" --outputTransport streamableHttp
+5. n8n : play (▶️) sur le Manual Trigger  (ré-ingestion RAG)
+========================================================
+
+
+
+PS C:\licence informatique\summer internship 2eme bachlor\jira-pipeline> ng serve -o
+
+
+ollama pull nomic-embed-text
+
+
+1) agent ai 

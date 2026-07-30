@@ -1,0 +1,25 @@
+Fiche entreprise — TechnoSfax
+
+TechnoSfax est une entreprise tunisienne spécialisée dans le développement
+logiciel et l'intelligence artificielle. Elle a été fondée en 2015 dans la
+ville de Sfax.
+
+Informations générales :
+- Nom : TechnoSfax
+- Année de création : 2015
+- Ville : Sfax, Tunisie
+- Nombre d'employés : 85
+- PDG (directeur général) : Karim Mabrouk
+
+Produits principaux :
+1. Une application de gestion de stock pour les commerçants.
+2. Une plateforme e-commerce pour les petites entreprises.
+3. Un assistant IA intelligent pour automatiser les tâches.
+
+Technologies utilisées :
+TechnoSfax utilise Ollama pour faire tourner des modèles d'IA en local,
+et n8n pour automatiser ses workflows. L'entreprise privilégie les
+solutions open-source et le respect de la vie privée (données en local).
+
+Horaires :
+L'entreprise est ouverte du lundi au vendredi, de 8h00 à 17h00.

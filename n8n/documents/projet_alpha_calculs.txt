@@ -1,0 +1,23 @@
+Rapport de calcul — Projet Alpha
+
+Ce document décrit les valeurs financières du Projet Alpha de l'entreprise.
+
+Budgets :
+- Le budget matériel est de 340 dinars.
+- Le budget logiciel est de 275 dinars.
+- Une réduction spéciale de 90 dinars est appliquée sur le total.
+
+Règle de calcul du budget total :
+budget_total = budget_matériel + budget_logiciel - réduction
+
+Licences :
+- Le projet nécessite 12 licences.
+- Chaque licence coûte 45 dinars.
+- Le coût total des licences = nombre_de_licences × prix_unitaire
+
+Équipe :
+- L'équipe compte 8 développeurs.
+- Chaque développeur travaille 6 heures par jour.
+- Le total d'heures par jour = nombre_de_développeurs × heures_par_développeur
+
+Note : pour obtenir les résultats chiffrés, il faut effectuer les calculs indiqués ci-dessus.

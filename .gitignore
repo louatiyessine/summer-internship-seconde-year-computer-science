@@ -1,0 +1,36 @@
+# ---- Secrets (never commit) ----
+.env
+*.env
+**/.env
+
+# ---- Videos (stored locally, too large for GitHub) ----
+videos/
+*.mp4
+*.mov
+*.mkv
+*.avi
+*.webm
+
+# ---- Python ----
+venv/
+.venv/
+**/.venv/
+__pycache__/
+*.pyc
+rag/chroma_db/
+**/chroma_db/
+
+# ---- Node / Angular ----
+node_modules/
+dist/
+.angular/
+npm-debug.log*
+
+# ---- OS / editor ----
+.DS_Store
+Thumbs.db
+.vscode/
+.claude/
+
+# ---- Archives ----
+*.zip

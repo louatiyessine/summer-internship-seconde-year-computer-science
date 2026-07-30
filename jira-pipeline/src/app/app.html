@@ -1,0 +1,212 @@
+<div class="page">
+
+  <!-- ═══════════════ EN-TÊTE ═══════════════ -->
+  <header class="header">
+    <div class="logo">JP</div>
+    <div>
+      <h1>Jira Pipeline</h1>
+      <p class="subtitle">Visualisation du traitement d'un ticket par les agents IA</p>
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <!-- ═══════════════ COLONNE 1 : LE PIPELINE ═══════════════ -->
+    <section class="card">
+      <h2 class="card-title">Pipeline de traitement</h2>
+
+      <!-- Formulaire -->
+      <div class="form">
+        <div class="field">
+          <label>Clé du ticket</label>
+          <input
+            type="text"
+            [(ngModel)]="ticketKey"
+            placeholder="ex : SCRUM-1"
+            (keyup.enter)="runPipeline()"
+            [disabled]="isLoading" />
+        </div>
+
+        <div class="field">
+          <label>Agent</label>
+          <select [(ngModel)]="selectedAgent" [disabled]="isLoading">
+            <option value="gemini">Agent 1 — Gemini </option>
+            <option value="llama">Agent 2 — Llama </option>
+          </select>
+        </div>
+
+        <button class="btn-run" (click)="runPipeline()" [disabled]="isLoading">
+          @if (isLoading) { <span class="spinner"></span> Traitement... }
+          @else { Lancer le pipeline }
+        </button>
+      </div>
+
+      <!-- Message d'erreur -->
+      @if (error) {
+        <div class="alert-error">{{ error }}</div>
+      }
+
+      <!-- Les étapes du pipeline -->
+      <div class="pipeline">
+        @for (step of steps; track step.id) {
+          <div class="step" [class]="'step-' + step.status">
+            <div class="step-icon">
+              @switch (step.status) {
+                @case ('success') { <span>✓</span> }
+                @case ('error') { <span>✕</span> }
+                @case ('running') { <span class="spinner-sm"></span> }
+                @default { <span class="dot"></span> }
+              }
+            </div>
+            <div class="step-body">
+              <div class="step-label">{{ step.label }}</div>
+              @if (step.detail) {
+                <div class="step-detail">{{ step.detail }}</div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Infos réelles du ticket -->
+      @if (ticketTitre) {
+        <div class="ticket-info">
+          <span class="badge">{{ ticketType }}</span>
+          <span class="badge badge-status">{{ ticketStatut }}</span>
+          @if (intention) {
+            <span class="badge badge-intent">{{ labelIntention(intention) }}</span>
+          }
+        </div>
+      }
+
+      <!-- Démarche réelle : architecture d'exécution (outils MCP enchaînés) -->
+      @if (toolCalls.length) {
+        <div class="tools">
+          <div class="tools-title">
+            Démarche réelle — architecture d'exécution
+            <span class="tools-count">{{ toolCalls.length }} étape(s)</span>
+          </div>
+
+          <!-- Vue d'ensemble : diagramme façon flowchart (comme le MD) -->
+          <div class="arch">
+            <div class="arch-node arch-start">
+              <span class="arch-icon">🎫</span>
+              <span class="arch-label">{{ ticketKey }}</span>
+            </div>
+            @for (t of toolCalls; track $index) {
+              <span class="arch-arrow">→</span>
+              <div class="arch-node srv-{{ toolServer(t.tool) }}">
+                <span class="arch-icon">{{ toolMeta(t.tool).icon }}</span>
+                <span class="arch-label">{{ toolMeta(t.tool).title }}</span>
+                @if (toolTarget(t.args)) {
+                  <span class="arch-target">{{ toolTarget(t.args) }}</span>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Détail par étape (aperçu court, tout le détail au clic) -->
+          <div class="flow">
+            @for (t of toolCalls; track $index) {
+              <div class="node srv-{{ toolServer(t.tool) }}">
+                <div class="node-main" (click)="t.open = !t.open">
+                  <div class="node-icon">{{ toolMeta(t.tool).icon }}</div>
+                  <div class="node-body">
+                    <div class="node-title">{{ toolMeta(t.tool).title }}</div>
+                    <div class="node-sub">
+                      <span class="srv-badge">{{ toolServer(t.tool) }}</span>
+                      <code class="node-tool">{{ t.tool }}</code>
+                      @if (toolTarget(t.args)) {
+                        <span class="node-target">{{ toolTarget(t.args) }}</span>
+                      }
+                    </div>
+                    @if (!t.open) {
+                      <div class="node-preview">{{ resultPreview(t.result) }}</div>
+                    }
+                  </div>
+                  <span class="tool-caret">{{ t.open ? '▼ moins' : '▶ détail' }}</span>
+                </div>
+
+                @if (t.open) {
+                  <div class="node-detail">
+                    <div class="detail-label">Arguments envoyés</div>
+                    <pre class="tool-args-pre">{{ formatArgs(t.args) }}</pre>
+                    <div class="detail-label">Résultat retourné</div>
+                    <pre class="tool-result">{{ t.result }}</pre>
+                  </div>
+                }
+              </div>
+
+              @if (!$last) {
+                <div class="flow-arrow">↓</div>
+              }
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Prompt généré (repliable) -->
+      @if (promptGenere) {
+        <button class="link-toggle" (click)="showPrompt = !showPrompt">
+          {{ showPrompt ? '▼ Masquer' : '▶ Voir' }} le prompt envoyé à l'agent
+        </button>
+        @if (showPrompt) {
+          <pre class="prompt-box">{{ promptGenere }}</pre>
+        }
+      }
+
+      <!-- Résultat final -->
+      @if (result) {
+        <div class="result">
+          <div class="result-head">
+            <span>Réponse de l'agent</span>
+            @if (tokens) { <span class="tokens">{{ tokens }} tokens</span> }
+          </div>
+          <pre class="result-box">{{ result }}</pre>
+        </div>
+      }
+    </section>
+
+    <!-- ═══════════════ COLONNE 2 : TESTEUR D'API (POSTMAN) ═══════════════ -->
+    <section class="card api-card">
+      <h2 class="card-title">Testeur d'API </h2>
+
+      <div class="field">
+        <label>Requête</label>
+        <div class="req-row">
+          <select [(ngModel)]="httpMethod" class="method-select" [class]="'m-' + httpMethod">
+            @for (m of httpMethods; track m) {
+              <option [value]="m">{{ m }}</option>
+            }
+          </select>
+          <input type="text" [(ngModel)]="apiUrl" class="mono url-input" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Corps de la requête (JSON)</label>
+        <textarea
+          [(ngModel)]="apiBody"
+          rows="6"
+          class="mono"
+          [disabled]="httpMethod === 'GET' || httpMethod === 'DELETE'"></textarea>
+        @if (httpMethod === 'GET' || httpMethod === 'DELETE') {
+          <span class="hint">Le corps est ignoré pour une requête {{ httpMethod }}.</span>
+        }
+      </div>
+
+      <button class="btn-send" (click)="testApi()" [disabled]="apiLoading">
+        @if (apiLoading) { <span class="spinner"></span> Envoi... }
+        @else { Envoyer la requête }
+      </button>
+
+      @if (apiResult) {
+        <div class="result">
+          <div class="result-head"><span>Réponse (JSON)</span></div>
+          <pre class="result-box mono">{{ apiResult }}</pre>
+        </div>
+      }
+    </section>
+
+  </div>
+</div>

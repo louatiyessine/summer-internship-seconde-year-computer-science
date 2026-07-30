@@ -1,0 +1,269 @@
+import os
+import sys
+from werkzeug.utils import secure_filename
+from rag.rag_engine import ajouter_document
+from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
+from agents.agent_jira import traiter_ticket, lire_ticket, construire_prompt
+sys.path.append(os.path.dirname(__file__))
+from utils.agent_client import appeler_agent_interne
+from agents.agent_gemini import repondre_avec_rag
+from agents.agent_llama import repondre_sans_rag
+from agents.dialogue import lancer_dialogue
+from utils.cost_calculator import generer_rapport_comparaison
+from utils.mcp_client import query_via_mcp, query_via_mcp_plan, query_via_mcp_structured
+
+app = Flask(__name__, static_folder="static")
+CORS(app)
+AGENT1_API_KEY = os.getenv("AGENT1_API_KEY")
+AGENT2_API_KEY = os.getenv("AGENT2_API_KEY")
+
+
+def cle_valide(cle_recue, cle_attendue):
+    """Vérifie que la clé API fournie correspond à la clé attendue pour cet agent."""
+    return cle_recue is not None and cle_recue == cle_attendue
+@app.route("/")
+def accueil():
+    """Sert la page principale du chatbot."""
+    return send_from_directory("static", "index.html")
+@app.route("/api/chat", methods=["POST"])
+def chat():
+    """Reçoit une question et la transmet à l'agent choisi via son API officielle."""
+    donnees = request.get_json()
+    question = donnees.get("question")
+    agent_choisi = donnees.get("agent", "gemini")
+
+    if not question:
+        return jsonify({"erreur": "Le champ 'question' est requis."}), 400
+
+    if agent_choisi not in ("gemini", "llama"):
+        return jsonify({"erreur": f"Agent inconnu : {agent_choisi}. Utilisez 'gemini' ou 'llama'."}), 400
+
+    resultat = appeler_agent_interne(agent_choisi, question)
+    return jsonify(resultat)
+@app.route("/api/agent1/chat", methods=["POST"])
+def agent1_chat():
+    """API dédiée à l'Agent 1 (Gemini + RAG). Nécessite une clé API valide."""
+    cle_fournie = request.headers.get("X-API-Key")
+    if not cle_valide(cle_fournie, AGENT1_API_KEY):
+        return jsonify({"erreur": "Clé API invalide ou manquante pour l'Agent 1."}), 401
+
+    donnees = request.get_json()
+    question = donnees.get("question")
+
+    if not question:
+        return jsonify({"erreur": "Le champ 'question' est requis."}), 400
+
+    resultat = repondre_avec_rag(question)
+    return jsonify(resultat)
+
+
+@app.route("/api/agent2/chat", methods=["POST"])
+def agent2_chat():
+    """API dédiée à l'Agent 2 (Llama, sans RAG). Nécessite une clé API valide."""
+    cle_fournie = request.headers.get("X-API-Key")
+    if not cle_valide(cle_fournie, AGENT2_API_KEY):
+        return jsonify({"erreur": "Clé API invalide ou manquante pour l'Agent 2."}), 401
+
+    donnees = request.get_json()
+    question = donnees.get("question")
+
+    if not question:
+        return jsonify({"erreur": "Le champ 'question' est requis."}), 400
+
+    resultat = repondre_sans_rag(question)
+    return jsonify(resultat)
+@app.route("/api/mcp/chat", methods=["POST"])
+def mcp_chat():
+    """
+    Nouvelle route MCP — cycle complet LLM + outils.
+    Les anciennes routes /api/chat, /api/jira etc. restent intactes.
+    """
+    data = request.get_json()
+    question = data.get("question", "")
+    agent = data.get("agent", "gemini")
+
+    if not question:
+        return jsonify({"erreur": "Question manquante"}), 400
+
+    try:
+        reponse = query_via_mcp(question, agent=agent)
+        return jsonify({"reponse": reponse})
+    except Exception as e:
+        return jsonify({"erreur": str(e)}), 500
+@app.route("/api/dialogue", methods=["POST"])
+def dialogue():
+    """Lance un dialogue entre Agent 1 et Agent 2 sur un sujet donné."""
+    donnees = request.get_json()
+    sujet = donnees.get("sujet")
+    nombre_tours = donnees.get("nombre_tours", 3)
+
+    if not sujet:
+        return jsonify({"erreur": "Le champ 'sujet' est requis."}), 400
+
+    resultat = lancer_dialogue(sujet, nombre_tours=nombre_tours)
+    return jsonify(resultat)
+@app.route("/api/compare", methods=["POST"])
+def compare():
+    """Envoie la même question aux deux agents (via leur API officielle) et retourne un rapport de comparaison."""
+    donnees = request.get_json()
+    question = donnees.get("question")
+
+    if not question:
+        return jsonify({"erreur": "Le champ 'question' est requis."}), 400
+
+    resultat_gemini = appeler_agent_interne("gemini", question)
+    resultat_llama = appeler_agent_interne("llama", question)
+
+    rapport = generer_rapport_comparaison(resultat_gemini, resultat_llama, question)
+    return jsonify(rapport)
+UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "rag", "documents")
+EXTENSIONS_AUTORISEES = {"pdf", "txt"}
+
+def extension_autorisee(nom_fichier):
+    return "." in nom_fichier and nom_fichier.rsplit(".", 1)[1].lower() in EXTENSIONS_AUTORISEES
+
+
+@app.route("/api/upload", methods=["POST"])
+def upload():
+    """Reçoit un fichier PDF ou TXT, le sauvegarde, et l'ajoute à la base RAG."""
+    if "fichier" not in request.files:
+        return jsonify({"erreur": "Aucun fichier reçu."}), 400
+
+    fichier = request.files["fichier"]
+
+    if fichier.filename == "":
+        return jsonify({"erreur": "Nom de fichier vide."}), 400
+
+    if not extension_autorisee(fichier.filename):
+        return jsonify({"erreur": "Seuls les fichiers .pdf et .txt sont acceptés."}), 400
+
+    nom_securise = secure_filename(fichier.filename)
+    chemin_sauvegarde = os.path.join(UPLOAD_DIR, nom_securise)
+    fichier.save(chemin_sauvegarde)
+
+    nombre_chunks = ajouter_document(chemin_sauvegarde)
+
+    return jsonify({
+        "message": f"Fichier '{nom_securise}' ajouté avec succès.",
+        "chunks_ajoutes": nombre_chunks
+    })
+@app.route("/api/jira", methods=["POST"])
+def jira():
+    """Lit un ticket Jira, analyse son intention, et envoie un prompt construit à l'agent choisi."""
+    donnees = request.get_json()
+    cle_ticket = donnees.get("cle_ticket")
+    agent_cible = donnees.get("agent_cible", "gemini")
+
+    if not cle_ticket:
+        return jsonify({"erreur": "Le champ 'cle_ticket' est requis."}), 400
+
+    try:
+        resultat = traiter_ticket(cle_ticket, agent_cible=agent_cible)
+    except Exception as erreur:
+        return jsonify({"erreur": f"Erreur lors du traitement du ticket : {str(erreur)}"}), 500
+
+    return jsonify(resultat)
+@app.route("/api/pipeline/prepare", methods=["POST"])
+def pipeline_prepare():
+    """
+    Étapes 1 à 3 du pipeline (rapides, sans appel à l'IA lourde) :
+    lit le ticket sur Jira, détecte l'intention, et construit le prompt.
+    Retourne les VRAIES données de chaque étape pour l'affichage Angular.
+    """
+    donnees = request.get_json()
+    cle_ticket = donnees.get("cle_ticket")
+
+    if not cle_ticket:
+        return jsonify({"erreur": "Le champ 'cle_ticket' est requis."}), 400
+
+    try:
+        ticket = lire_ticket(cle_ticket)
+        prompt, intention = construire_prompt(ticket)
+    except Exception as erreur:
+        return jsonify({"erreur": f"Impossible de préparer le ticket : {str(erreur)}"}), 500
+
+    return jsonify({
+        "ticket": ticket,
+        "intention": intention,
+        "prompt": prompt,
+    })
+
+
+@app.route("/api/mcp/run", methods=["POST"])
+def mcp_run():
+    """
+    Exécution MCP RÉELLE et structurée : lance la vraie boucle d'outils
+    (jira__, fs__, atlassian__) qui agit vraiment sur les fichiers,
+    et retourne la liste des outils appelés + la réponse finale.
+    Utilisé par l'interface Angular pour afficher la démarche complète.
+    """
+    donnees = request.get_json()
+    question = donnees.get("question", "")
+    agent = donnees.get("agent", "gemini")
+
+    if not question:
+        return jsonify({"erreur": "Le champ 'question' est requis."}), 400
+
+    try:
+        resultat = query_via_mcp_structured(question, agent=agent)
+        return jsonify({
+            "actions": resultat["actions"],
+            "reponse": resultat["final"],
+        })
+    except Exception as e:
+        return jsonify({"erreur": str(e)}), 500
+
+
+# Stockage temporaire du plan en attente de confirmation
+plan_en_attente = {}
+
+@app.route("/api/mcp/plan", methods=["POST"])
+def mcp_plan():
+    """
+    Étape 1 : l'agent analyse le ticket et retourne le plan
+    sans rien exécuter.
+    """
+    data = request.get_json()
+    question = data.get("question", "")
+    agent = data.get("agent", "gemini")
+
+    if not question:
+        return jsonify({"erreur": "Question manquante"}), 400
+
+    try:
+        plan = query_via_mcp_plan(question, agent=agent)
+        # Sauvegarder le plan pour l'exécution ultérieure
+        plan_en_attente["question"] = question
+        plan_en_attente["agent"] = agent
+        plan_en_attente["plan"] = plan
+        return jsonify({"plan": plan})
+    except Exception as e:
+        return jsonify({"erreur": str(e)}), 500
+
+
+@app.route("/api/mcp/execute", methods=["POST"])
+def mcp_execute():
+    """
+    Étape 2 : exécute le plan si l'utilisateur a approuvé.
+    """
+    data = request.get_json()
+    confirmation = data.get("confirmation", "n")
+
+    if confirmation.lower() != "y":
+        plan_en_attente.clear()
+        return jsonify({"reponse": "Action annulée par l'utilisateur."})
+
+    if not plan_en_attente:
+        return jsonify({"erreur": "Aucun plan en attente."}), 400
+
+    try:
+        question = plan_en_attente["question"]
+        agent = plan_en_attente["agent"]
+        reponse = query_via_mcp(question, agent=agent)
+        plan_en_attente.clear()
+        return jsonify({"reponse": reponse})
+    except Exception as e:
+        return jsonify({"erreur": str(e)}), 500
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", debug=True, port=5000)

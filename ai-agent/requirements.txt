@@ -1,0 +1,13 @@
+flask
+flask-cors
+google-genai
+ollama
+langchain
+langchain-community
+langchain-google-genai
+langchain-ollama
+chromadb
+pypdf
+python-dotenv
+langchain-chroma
+requests
