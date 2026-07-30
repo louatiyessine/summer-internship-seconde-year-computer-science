@@ -25,6 +25,7 @@
 ## Table des matières
 
 - [Aperçu](#aperçu)
+- [Architecture](#architecture)
 - [Structure du dépôt](#structure-du-dépôt)
 - [1. ai-agent — Application multi-agents](#1-ai-agent--application-web-multi-agents)
 - [2. jira-pipeline — Frontend Angular](#2-jira-pipeline--frontend-angular)
@@ -40,6 +41,35 @@
 Ce dépôt regroupe, de façon progressive, l'ensemble des projets construits durant le stage —
 des fondations d'un agent IA jusqu'à des architectures avancées mêlant plusieurs agents, la
 technique **RAG**, le protocole **MCP** et l'automatisation de bout en bout avec **n8n**.
+
+## Architecture
+
+Vue d'ensemble du projet phare — l'application multi-agents `ai-agent` :
+
+```mermaid
+flowchart TD
+    U["Utilisateur"] --> UI["Interface de chat<br/>4 modes"]
+    UI --> F["Serveur Flask<br/>orchestrateur / API REST"]
+
+    F --> A1["Agent 1<br/>Gemini + RAG"]
+    F --> A2["Agent 2<br/>Llama - Ollama, local"]
+    F --> A3["Agent 3<br/>Jira"]
+
+    A1 --> RAG[("ChromaDB<br/>base vectorielle")]
+    RAG --> DOCS["Documents TechNova"]
+    A3 --> JIRA["API REST Jira / Atlassian"]
+
+    F --> COST["Calcul tokens -> cout $"]
+    F --> MCP["Serveur MCP<br/>outils: fichiers, Jira"]
+    MCP -.plan puis execute.-> GIT["Commit / Push Git"]
+
+    classDef core fill:#1E4D2B,stroke:#14361E,color:#fff;
+    classDef agent fill:#6FA85C,stroke:#2C5F2D,color:#fff;
+    classDef ext fill:#EAF1E4,stroke:#6FA85C,color:#1E4D2B;
+    class F,UI core;
+    class A1,A2,A3 agent;
+    class RAG,DOCS,JIRA,COST,MCP,GIT ext;
+```
 
 ## Structure du dépôt
 
