@@ -4,7 +4,8 @@
 **/.env
 
 # ---- Videos (stored locally, too large for GitHub) ----
-videos/
+# The videos/ folder is kept (so videos/VIDEOS.md is versioned),
+# but the actual video files are excluded by extension below.
 *.mp4
 *.mov
 *.mkv

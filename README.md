@@ -1,14 +1,47 @@
-# Summer Internship — Seconde Year Computer Science
+<h1 align="center">Summer Internship — Second Year Computer Science</h1>
 
-Dépôt regroupant le travail réalisé pendant mon **stage d'été (2ᵉ année Bachelor Informatique)**,
-centré sur l'**Intelligence Artificielle agentique** : agents IA, RAG, protocole MCP et
-automatisation de workflows avec n8n.
+<p align="center">
+  <em>Travail réalisé pendant mon stage d'été (2ᵉ année Bachelor Informatique)<br>
+  centré sur l'Intelligence Artificielle agentique : agents IA, RAG, MCP et automatisation n8n.</em>
+</p>
 
-**Auteur :** Yessine Louati
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/Flask-000000?style=flat-square&logo=flask&logoColor=white" alt="Flask">
+  <img src="https://img.shields.io/badge/LangChain-1C3C3C?style=flat-square&logo=langchain&logoColor=white" alt="LangChain">
+  <img src="https://img.shields.io/badge/Ollama-000000?style=flat-square&logo=ollama&logoColor=white" alt="Ollama">
+  <img src="https://img.shields.io/badge/n8n-EA4B71?style=flat-square&logo=n8n&logoColor=white" alt="n8n">
+  <img src="https://img.shields.io/badge/Angular-DD0031?style=flat-square&logo=angular&logoColor=white" alt="Angular">
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript">
+  <img src="https://img.shields.io/badge/Git-F05032?style=flat-square&logo=git&logoColor=white" alt="Git">
+</p>
+
+<p align="center">
+  <strong>Auteur :</strong> Yessine Louati
+</p>
 
 ---
 
-## Contenu du dépôt
+## Table des matières
+
+- [Aperçu](#aperçu)
+- [Structure du dépôt](#structure-du-dépôt)
+- [1. ai-agent — Application multi-agents](#1-ai-agent--application-web-multi-agents)
+- [2. jira-pipeline — Frontend Angular](#2-jira-pipeline--frontend-angular)
+- [3. n8n — Automatisations & IA agentique](#3-n8n--automatisations--ia-agentique)
+- [4. videos — Démonstrations](#4-videos--démonstrations)
+- [Stack technique](#stack-technique)
+- [Sécurité](#sécurité)
+
+---
+
+## Aperçu
+
+Ce dépôt regroupe, de façon progressive, l'ensemble des projets construits durant le stage —
+des fondations d'un agent IA jusqu'à des architectures avancées mêlant plusieurs agents, la
+technique **RAG**, le protocole **MCP** et l'automatisation de bout en bout avec **n8n**.
+
+## Structure du dépôt
 
 ```
 .
@@ -21,54 +54,58 @@ automatisation de workflows avec n8n.
 
 ---
 
-## 1. `ai-agent/` — Application web multi-agents
+## 1. `ai-agent` — Application web multi-agents
 
 Application **Flask** réunissant trois agents et une interface de chat à quatre modes.
 
-- **Agent 1 — Gemini 2.5 Flash + RAG** : répond à partir des documents de l'entreprise
-  fictive *TechNova*, indexés dans une base vectorielle **ChromaDB**.
-- **Agent 2 — Llama 3.2 (local via Ollama, sans RAG)** : sert de comparaison.
-- **Agent 3 — Jira** : lit un ticket via l'API REST Atlassian, détecte l'intention et
-  transmet un prompt à l'Agent 1 ou 2.
-- **Intégration MCP** (Model Context Protocol) : résolution de tickets en deux temps
-  (*plan* puis *execute*), avec commit/push Git.
+| Agent | Modèle | Rôle |
+|---|---|---|
+| **Agent 1** | Gemini 2.5 Flash + **RAG** | Répond à partir des documents *TechNova* (base vectorielle ChromaDB) |
+| **Agent 2** | Llama 3.2 (local, Ollama) | Sans RAG — sert de comparaison |
+| **Agent 3** | Jira | Lit un ticket via l'API REST Atlassian, détecte l'intention, délègue à l'agent 1 ou 2 |
 
-Modes d'interface : chat simple · comparaison des deux agents (tokens + coût $) ·
-dialogue entre agents · agent Jira.
+Intégration **MCP** (Model Context Protocol) : résolution de tickets en deux temps
+(*plan* → *execute*) avec commit/push Git. Modes d'interface : chat simple · comparaison des
+deux agents (tokens + coût $) · dialogue entre agents · agent Jira.
 
-**Lancer :** créer un `.env` à partir de `ai-agent/.env.example`, installer
-`requirements.txt`, puis `python app.py` (voir la fiche `ai-agent/context_projet.md`).
+> Détails et démarrage : [`ai-agent/README.md`](ai-agent/README.md)
 
-## 2. `jira-pipeline/` — Frontend Angular
+## 2. `jira-pipeline` — Frontend Angular
 
-Interface Angular (v21) accompagnant le pipeline Jira. Source dans `src/`.
-`npm install` puis `ng serve` (http://localhost:4200).
+Interface **Angular 21** accompagnant le pipeline Jira.
 
-## 3. `n8n/` — Automatisations & IA agentique
+> Détails et démarrage : [`jira-pipeline/README.md`](jira-pipeline/README.md)
 
-- **phase-1-meteo/** : bulletin météo quotidien automatisé (OpenWeatherMap → Gmail).
-- **phase-2-rag-tools/** : agent IA multi-outils local (calcul, météo, RAG) avec Ollama.
-- **phase-3-mcp/** : même agent où les outils sont remplacés par des serveurs MCP.
-- **langgraph/** : agent ReAct construit avec LangGraph (notebook).
-- **workflow-to-python/** : conversions des workflows en Python.
+## 3. `n8n` — Automatisations & IA agentique
+
+| Dossier | Contenu |
+|---|---|
+| `phase-1-meteo/` | Bulletin météo quotidien automatisé (OpenWeatherMap → Gmail) |
+| `phase-2-rag-tools/` | Agent IA multi-outils local (calcul, météo, RAG) avec Ollama |
+| `phase-3-mcp/` | Même agent où les outils sont remplacés par des serveurs MCP |
+| `langgraph/` | Agent ReAct construit avec LangGraph (notebook) |
+| `workflow-to-python/` | Conversions des workflows en Python |
 
 Chaque phase contient son workflow `.json` (importable dans n8n) et sa fiche `.md`.
-Vue d'ensemble : `n8n/RECAP_conversation_complete.md`. Démarrage : `n8n/DEMARRAGE_agent.txt`.
 
-## 4. `videos/`
+> Détails et démarrage : [`n8n/README.md`](n8n/README.md)
 
-Vidéos de démonstration. Trop volumineuses pour GitHub (> 100 Mo), elles restent
-**locales** et ne sont pas versionnées. Description et scripts : `videos/VIDEOS.md`.
+## 4. `videos` — Démonstrations
+
+Vidéos de démonstration. Trop volumineuses pour GitHub (> 100 Mo), elles restent **locales**
+et ne sont pas versionnées. Description et scripts : [`videos/VIDEOS.md`](videos/VIDEOS.md).
 
 ---
 
 ## Stack technique
 
-Python · Flask · LangChain / LangGraph · Gemini · Llama & Qwen (Ollama) · ChromaDB ·
-MCP · n8n · Angular / TypeScript · API Jira, OpenWeatherMap, Gmail · Git.
+**Langages** : Python · TypeScript · JavaScript
+**IA** : LangChain · LangGraph · Gemini · Llama & Qwen (Ollama) · ChromaDB (RAG) · MCP
+**Backend / Frontend** : Flask · Angular
+**Automatisation & intégrations** : n8n · API Jira · OpenWeatherMap · Gmail · Git
 
 ## Sécurité
 
-Les fichiers `.env` (clés API) et les artefacts lourds (`venv/`, `node_modules/`,
-`dist/`, base vectorielle, vidéos) sont exclus via `.gitignore`. Utilisez les fichiers
-`.env.example` comme modèles.
+Les fichiers `.env` (clés API) et les artefacts lourds (`venv/`, `node_modules/`, `dist/`,
+base vectorielle, vidéos) sont exclus via `.gitignore`. Utilisez les fichiers `.env.example`
+comme modèles.
